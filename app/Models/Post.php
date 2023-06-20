@@ -23,7 +23,8 @@ class Post extends Model
         'subtitle',
         'text',
         'user_id',
-        'publication_date'
+        'publication_date',
+        'post_status'
     ];
 
     // protected $guarded = ['post_status'];

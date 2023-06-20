@@ -2,15 +2,20 @@
 
 namespace Tests\Feature;
 
+use Carbon\Carbon;
 use Tests\TestCase;
 use App\Models\Post;
 use App\Models\User;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PostResourceTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, WithFaker, AuthenticatesUsers;
+
     public function test_post_routes_protected_by_authentication()
     {
         // Creamos un usuario de prueba
@@ -46,5 +51,165 @@ class PostResourceTest extends TestCase
         // Evaluamos la ruta delete '/posts/{post}' (DELETE request)
         $response = $this->delete('/posts/' . $post->id);
         $response->assertRedirect('/login');
+    }
+    public function test_can_create_post()
+    {
+        $user = User::factory()->create(); // Crea un usuario de prueba
+
+        $postData = [
+            'title' => $this->faker->sentence(1),
+            'subtitle' => $this->faker->sentence(1),
+            'text' => $this->faker->paragraph(1),
+            'user_id' => $user->id,
+            'publication_date' => now()->toDateString(),
+        ];
+
+        $response = $this->actingAs($user)->post('/posts', $postData);
+
+        $response->assertRedirect(); // Verifica que se haya redireccionado correctamente
+        $this->assertDatabaseHas('posts', $postData); // Verifica que los datos estén en la base de datos
+    }
+
+    public function test_can_update_post()
+    {
+        $user = User::factory()->create(); // Crea un usuario de prueba
+        $post = Post::factory()->create(['user_id' => $user->id]); // Crea un post de prueba asociado al usuario
+
+        $updatedData = [
+            'title' => $this->faker->sentence(1),
+            'subtitle' => $this->faker->sentence(1),
+            'text' => $this->faker->paragraph(1),
+            'publication_date' => now()->toDateString(),
+        ];
+
+        $response = $this->actingAs($user)->put('/posts/' . $post->id, $updatedData);
+
+        $response->assertRedirect(); // Verifica que se haya redireccionado correctamente
+        $this->assertDatabaseHas('posts', $updatedData); // Verifica que los datos estén en la base de datos
+    }
+
+    public function test_can_delete_post()
+    {
+        $user = User::factory()->create(); // Crea un usuario de prueba
+        $post = Post::factory()->create(['user_id' => $user->id]); // Crea un post de prueba asociado al usuario
+
+        $response = $this->actingAs($user)->delete('/posts/' . $post->id);
+
+        $response->assertStatus(302); // Verifica que se haya redireccionado correctamente
+        $this->assertDatabaseMissing('posts', ['id' => $post->id]); // Verifica que los datos no estén en la base de datos
+    }
+
+
+
+
+
+
+    /** @test */
+    public function testItValidatesTitleIsRequiredAndMaximumLengthIs150Characters()
+    {
+        $this->actingAs(User::factory()->create());
+
+        $response = $this->post(route('posts.store'), [
+            'title' => null,
+            'subtitle' => 'Example Subtitle',
+            'text' => 'Example Text',
+            'publication_date' => now(),
+            'user_id' => 1,
+        ]);
+
+        $response->assertSessionHasErrors('title');
+
+        $title = Str::random(151);
+        $response = $this->post(route('posts.store'), [
+            'title' => $title,
+            'subtitle' => 'Example Subtitle',
+            'text' => 'Example Text',
+            'publication_date' => now(),
+            'user_id' => 1,
+        ]);
+
+        $response->assertSessionHasErrors('title');
+    }
+
+    /** @test */
+    public function testItValidatesSubtitleIsRequiredAndMaximumLengthIs100Characters()
+    {
+        $this->actingAs(User::factory()->create());
+
+        $response = $this->post(route('posts.store'), [
+            'title' => 'Example Title',
+            'subtitle' => null,
+            'text' => 'Example Text',
+            'publication_date' => now(),
+            'user_id' => 1,
+        ]);
+
+        $response->assertSessionHasErrors('subtitle');
+
+        $subtitle = Str::random(101);
+        $response = $this->post(route('posts.store'), [
+            'title' => 'Example Title',
+            'subtitle' => $subtitle,
+            'text' => 'Example Text',
+            'publication_date' => now(),
+            'user_id' => 1,
+        ]);
+
+        $response->assertSessionHasErrors('subtitle');
+    }
+
+    /** @test */
+    public function testItValidatesTextIsRequiredAndMaximumLengthIs150Characters()
+    {
+        $this->actingAs(User::factory()->create());
+
+        $response = $this->post(route('posts.store'), [
+            'title' => 'Example Title',
+            'subtitle' => 'Example Subtitle',
+            'text' => null,
+            'publication_date' => now(),
+            'user_id' => 1,
+        ]);
+
+        $response->assertSessionHasErrors('text');
+
+        $text = Str::random(151);
+        $response = $this->post(route('posts.store'), [
+            'title' => 'Example Title',
+            'subtitle' => 'Example Subtitle',
+            'text' => $text,
+            'publication_date' => now(),
+            'user_id' => 1,
+        ]);
+
+        $response->assertSessionHasErrors('text');
+    }
+
+    /** @test */
+    public function test_publication_date_is_date()
+    {
+        $postData = [
+            'title' => $this->faker->sentence,
+            'subtitle' => $this->faker->sentence,
+            'text' => $this->faker->paragraph,
+            'user_id' => User::factory()->create()->id,
+            'publication_date' => 'invalid-date', // Fecha inválida
+        ];
+
+        $errorMessage = Lang::get('validation.date', [
+            'attribute' => trans('validation.attributes.publication_date')
+        ]);
+
+        $response = $this->post('/posts', $postData)
+            ->withErrors(['publication_date' => $errorMessage]);
+
+        // Verifica que la respuesta sea una redirección
+        $this->assertTrue($response->isRedirect());
+
+        // Realiza una nueva solicitud GET a la página de creación
+        $response = $this->get('/posts/create');
+
+        // Verifica que los errores de validación se muestren en la página
+        $response->assertSessionHasErrors('publication_date');
     }
 }
