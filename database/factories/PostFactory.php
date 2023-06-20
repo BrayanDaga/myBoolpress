@@ -17,10 +17,10 @@ class PostFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => fake()->sentence(12),
-            'subtitle' => fake()->sentence(6),
-            'text' => fake()->text(5000),
-            'author' => fake()->name,
+            'title' => fake()->sentence(1),
+            'subtitle' => fake()->sentence(4),
+            'text' => fake()->text(300),
+            'user_id' => 1,
             'publication_date' => fake()->dateTime(),
         ];
     }

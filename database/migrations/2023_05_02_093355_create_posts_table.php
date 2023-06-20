@@ -16,9 +16,10 @@ return new class extends Migration
             $table->string('title', 150);
             $table->string('subtitle', 100);
             $table->mediumText('text', 150);
-            $table->string('author', 60);
+            $table->unsignedBigInteger('user_id');
             $table->date('publication_date', 150);
             $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
