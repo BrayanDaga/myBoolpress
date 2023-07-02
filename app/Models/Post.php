@@ -55,7 +55,7 @@ class Post extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
-    public function infoPost()
+    public function infoPost(): HasOne
     {
         return $this->hasOne(InfoPost::class);
     }

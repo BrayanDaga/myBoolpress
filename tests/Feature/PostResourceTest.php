@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Tests\TestCase;
 use App\Models\Post;
 use App\Models\User;
+use App\Models\InfoPost;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -52,7 +53,7 @@ class PostResourceTest extends TestCase
         $response = $this->delete('/posts/' . $post->id);
         $response->assertRedirect('/login');
     }
-    public function test_can_create_post()
+    public function test_can_create_post_with_infoPost()
     {
         $user = User::factory()->create();
 
@@ -84,24 +85,30 @@ class PostResourceTest extends TestCase
 
 
 
-    public function test_can_update_post()
+    public function test_can_update_post_with_infoPost()
     {
-        $user = User::factory()->create(); // Crea un usuario de prueba
-        $post = Post::factory()->create(['user_id' => $user->id]); // Crea un post de prueba asociado al usuario
+        $user = User::factory()->create();
+        $post = Post::factory()->create(['user_id' => $user->id]);
+        $post->infoPost()->create(['comment_status' => 'open', 'post_status' => 'public']);
 
         $updatedData = [
             'title' => $this->faker->sentence(1),
             'subtitle' => $this->faker->sentence(1),
             'text' => $this->faker->paragraph(1),
             'publication_date' => now()->toDateString(),
-            'user_id' => $user->id
+            'user_id' => $user->id,
+            'post_status' => 'private',
+            'comment_status' => 'closed',
         ];
 
         $response = $this->actingAs($user)->put('/posts/' . $post->id, $updatedData);
 
-        $response->assertRedirect(); // Verifica que se haya redireccionado correctamente
-        $this->assertDatabaseHas('posts', $updatedData); // Verifica que los datos estén en la base de datos
+        $response->assertRedirect();
+        $this->assertEquals($post->refresh()->infoPost->comment_status, 'closed');
+        $this->assertEquals($post->refresh()->infoPost->post_status, 'private');
     }
+
+
 
     public function test_can_delete_post()
     {

@@ -43,7 +43,7 @@
                 <div class="alert alert-danger">{{ $message }}</div>
             @enderror
 
-            {{-- <div class="form-group">
+            <div class="form-group">
                 <label for="post_status">Stato del post</label>
                 <select name="post_status" id="post_status" class="custom-select">
                     <option value="draft" {{ $post->infoPost->post_status == 'draft' ? 'selected' : '' }}>draft</option>
@@ -68,7 +68,7 @@
             </div>
             @error('comment_status')
                 <div class="alert alert-danger">{{ $message }}</div>
-            @enderror --}}
+            @enderror
 
             <h3>Tags</h3>
             @foreach ($tags as $tag)

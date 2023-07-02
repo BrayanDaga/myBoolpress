@@ -111,11 +111,25 @@ class PostController extends Controller
         if (Gate::denies('edit-post', $post)) {
             abort(403); // Retorna un error 403 (Forbidden) si no tiene permiso
         }
-        // modifica post
 
-        $post->update(array_filter($request->validated()));
+        $data = $request->validated();
 
-        // modifica infoPost
+        $postData = [
+            'title' => $data['title'],
+            'subtitle' => $data['subtitle'],
+            'text' => $data['text'],
+            'user_id' => $data['user_id'],
+            'publication_date' => $data['publication_date'],
+        ];
+        $post->update($postData);
+
+        $infoPostData = [
+            'comment_status' => $data['comment_status'],
+            'post_status' => $data['post_status'],
+        ];
+        $post->infoPost()->update($infoPostData);
+
+        return redirect()->route('posts.index')->with('message', 'Post modificato correttamente!');
 
         // // $infoPost = InfoPost::where('post_id', $post->id)->first();
         // $infoPost = $post->infoPost;
@@ -129,7 +143,6 @@ class PostController extends Controller
         //     $post->tags()->sync($data["tags"]);
         // }
 
-        return redirect()->route('posts.index')->with('message', 'Post modificato correttamente!');
     }
 
     /**
