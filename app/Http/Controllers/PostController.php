@@ -115,17 +115,14 @@ class PostController extends Controller
         ];
         $post->infoPost()->update($infoPostData);
 
+
+        // modifica tags
+        if (empty($data["tags"])) {
+            $post->tags()->detach();
+        } else {
+            $post->tags()->sync($data["tags"]);
+        }
         return redirect()->route('posts.index')->with('message', 'Post modificato correttamente!');
-
-
-
-        // // modifica tags
-        // if (empty($data["tags"])) {
-        //     $post->tags()->detach();
-        // } else {
-        //     $post->tags()->sync($data["tags"]);
-        // }
-
     }
 
     /**

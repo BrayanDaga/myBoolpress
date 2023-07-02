@@ -155,6 +155,39 @@ class PostResourceTest extends TestCase
         $this->assertCount(0, $post->tags);
     }
 
+    /** @test */
+    public function it_can_update_post_with_changed_tags()
+    {
+        // Crear un post con algunos tags iniciales
+        $user = User::factory()->create();
+        $post = Post::factory()->create(['user_id' => $user->id]);
+        $tags = Tag::factory()->count(3)->create();
+        $post->tags()->attach($tags);
+
+        // Generar nuevos tags
+        $newTags = Tag::factory()->count(2)->create();
+
+        // Datos actualizados del post
+        $postData = [
+            'title' => $this->faker->sentence(1),
+            'subtitle' => $this->faker->sentence(1),
+            'text' => $this->faker->paragraph(1),
+            'publication_date' => now()->toDateString(),
+            'user_id' => $user->id,
+            'post_status' => 'private',
+            'comment_status' => 'closed',
+            'tags' => $newTags->pluck('id')->toArray(),
+        ];
+
+        // Realizar la solicitud de actualización del post
+        $response = $this->actingAs($user)->put('/posts/' . $post->id, $postData);
+
+        $response->assertRedirect();
+        $this->assertCount(2, $post->fresh()->tags);
+        $this->assertEquals($newTags->pluck('id')->toArray(), $post->fresh()->tags->pluck('id')->toArray());
+    }
+
+
     public function test_can_delete_post()
     {
         $user = User::factory()->create(); // Crea un usuario de prueba
