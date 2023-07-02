@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class InfoPost extends Model
 {
     use HasFactory;
+    protected $table = 'info_posts';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -21,7 +23,7 @@ class InfoPost extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function post(): BelongsTo
+    public function post()
     {
         return $this->belongsTo(Post::class);
     }

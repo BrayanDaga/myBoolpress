@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Tag;
 use App\Models\Post;
+use App\Models\InfoPost;
 use App\Http\Requests\PostRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -38,14 +39,33 @@ class PostController extends Controller
      */
     public function store(PostRequest $request)
     {
-        $post = new Post();
-        $post->title = $request->title;
-        $post->subtitle = $request->subtitle;
-        $post->text = $request->text;
-        $post->publication_date = $request->publication_date;
-        $post->user_id = Auth::user()->id;
-        $post->save();
-        return redirect()->route('posts.index')->with('message', 'Post creato correttamente!');
+        $data = $request->validated();
+
+
+        // Crear el post
+        $postData = [
+            'title' => $data['title'],
+            'subtitle' => $data['subtitle'],
+            'text' => $data['text'],
+            'user_id' => $data['user_id'],
+            'publication_date' => $data['publication_date'],
+        ];
+        $post = Post::create($postData);
+
+        // Crear el InfoPost y establecer las relaciones
+        $infoPostData = [
+            'post_id' => $post->id,
+            'comment_status' => $data['comment_status'],
+            'post_status' => $data['post_status'],
+        ];
+        $infoPost = InfoPost::create($infoPostData);
+
+        // Establecer la relación entre el post y el infoPost
+        $post->infoPost()->save($infoPost);
+
+        return redirect()->route('posts.index')->with('message', 'Post creado correctamente!');
+
+
 
         // salvataggio infoPost
         // $data["post_id"] = $post->id; //devo specificare il nuovo post_id con l'id del post creato
@@ -92,8 +112,8 @@ class PostController extends Controller
             abort(403); // Retorna un error 403 (Forbidden) si no tiene permiso
         }
         // modifica post
-        $data = $request->all();
-        $post->update($data);
+
+        $post->update(array_filter($request->validated()));
 
         // modifica infoPost
 

@@ -7,7 +7,7 @@ use App\Models\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class PostTest extends TestCase
+class PostHomeTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -36,7 +36,7 @@ class PostTest extends TestCase
         $post = Post::factory()->create(['title' => 'Mi post de prueba', 'user_id' => $user->id]);
 
         // Realizamos una solicitud GET a la ruta de un solo post
-        $response = $this->get('/post/' . $post->id);
+        $response = $this->get(route('post', $post->id));
 
         // Verificamos que la respuesta tenga un estado 200 (OK)
         $response->assertStatus(200);

@@ -5,6 +5,7 @@
         <form action="{{ route('posts.store') }}" method="POST">
             @csrf
             @method('POST')
+            <input class="d-none" type="text" name="user_id" value="{{ auth()->user()->id }}">
             <div class="form-group">
                 <label for="title">Titolo</label>
                 <input type="text" class="form-control" id="title" name="title" placeholder="Inserisci il titolo"

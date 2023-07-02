@@ -9,8 +9,8 @@
              <h5>Autore: {{ $post->user->name }}</h5>
              <div>
                  <p>{{ $post->publication_date }}</p>
-                 {{-- <p>Post status: {{ $post->infoPost->post_status }}</p> --}}
-                 {{-- <p>Comment statis: {{ $post->infoPost->comment_status }}</p> --}}
+                 <p>Post status: {{ $post->infoPost->post_status ?? '' }}</p>
+                 <p>Comment statis: {{ $post->infoPost->comment_status ?? '' }}</p>
              </div>
              <h3>Commenti</h3>
              @foreach ($post->comments as $comment)

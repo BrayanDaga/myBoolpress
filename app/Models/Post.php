@@ -27,7 +27,7 @@ class Post extends Model
         'post_status'
     ];
 
-    // protected $guarded = ['post_status'];
+    // protected $guarded = [];
 
 
     /**
@@ -55,10 +55,11 @@ class Post extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
-    public function infoPost(): HasOne
+    public function infoPost()
     {
         return $this->hasOne(InfoPost::class);
     }
+
 
     /**
      * The tags that belong to the Post

@@ -54,7 +54,7 @@ class PostResourceTest extends TestCase
     }
     public function test_can_create_post()
     {
-        $user = User::factory()->create(); // Crea un usuario de prueba
+        $user = User::factory()->create();
 
         $postData = [
             'title' => $this->faker->sentence(1),
@@ -62,13 +62,27 @@ class PostResourceTest extends TestCase
             'text' => $this->faker->paragraph(1),
             'user_id' => $user->id,
             'publication_date' => now()->toDateString(),
+            'post_status' => 'public',
+            'comment_status' => 'open',
         ];
 
         $response = $this->actingAs($user)->post('/posts', $postData);
 
-        $response->assertRedirect(); // Verifica que se haya redireccionado correctamente
-        $this->assertDatabaseHas('posts', $postData); // Verifica que los datos estén en la base de datos
+        $response->assertRedirect();
+        $this->assertDatabaseHas('info_posts', [
+            'post_id' => Post::first()->id,
+            'post_status' => 'public',
+            'comment_status' => 'open',
+        ]);
+
+        $post = Post::first();
+        $this->assertNotNull($post->infoPost);
+        $this->assertEquals($post->id, $post->infoPost->post_id);
+        $this->assertContains($post->infoPost->comment_status, ['open', 'closed', 'private']);
+        $this->assertContains($post->infoPost->post_status, ['public', 'private', 'draft']);
     }
+
+
 
     public function test_can_update_post()
     {
@@ -80,6 +94,7 @@ class PostResourceTest extends TestCase
             'subtitle' => $this->faker->sentence(1),
             'text' => $this->faker->paragraph(1),
             'publication_date' => now()->toDateString(),
+            'user_id' => $user->id
         ];
 
         $response = $this->actingAs($user)->put('/posts/' . $post->id, $updatedData);
@@ -99,10 +114,32 @@ class PostResourceTest extends TestCase
         $this->assertDatabaseMissing('posts', ['id' => $post->id]); // Verifica que los datos no estén en la base de datos
     }
 
+    public function test_it_validates_user_id_is_required_and_exists()
+    {
+
+        $user = User::factory()->create(); // Crea un usuario de prueba
+
+        $response = $this->actingAs($user)->post(route('posts.store'), [
+            'title' => 'Example Title',
+            'subtitle' => 'Example Subtitle',
+            'text' => 'Example Text',
+            'publication_date' => now()->toDateString(),
+            'user_id' => null,
+        ]);
 
 
+        $response->assertSessionHasErrors('user_id');
 
+        $response = $this->actingAs($user)->post(route('posts.store'), [
+            'title' => 'Example Title',
+            'subtitle' => 'Example Subtitle',
+            'text' => 'Example Text',
+            'publication_date' => now()->toDateString(),
+            'user_id' => 999,
+        ]);
 
+        $response->assertSessionHasErrors('user_id');
+    }
 
     /** @test */
     public function testItValidatesTitleIsRequiredAndMaximumLengthIs150Characters()

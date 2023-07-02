@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PostRequest extends FormRequest
@@ -22,11 +23,16 @@ class PostRequest extends FormRequest
     public function rules(): array
     {
         return [
+            //campos de post
             'title' => 'required|max:150',
             'subtitle' => 'required|max:100',
             'text' => 'required|max:150',
-
-            'publication_date' => 'required|date'
+            'user_id' => 'required|exists:users,id',
+            'publication_date' => 'required|date',
+            //campos de InfoPost 
+            'post_id' => 'nullable', //Supongo que no es neceario ya que se agrega como $post->infoPost()->create($data);
+            'post_status' => ['required', Rule::in(['public', 'private', 'draft'])],
+            'comment_status' => ['required', Rule::in(['open', 'closed', 'private'])],
         ];
     }
 }

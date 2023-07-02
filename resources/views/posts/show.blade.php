@@ -26,11 +26,11 @@
             </tr>
             <tr>
                 <td>Status del post</td>
-                <td>{{-- $post->infoPost->post_status --}}</td>
+                <td>{{ $post->infoPost->post_status ?? '' }}</td>
             </tr>
             <tr>
                 <td>Status dei commenti</td>
-                <td>{{-- $post->infoPost->comment_status --}}</td>
+                <td>{{ $post->infoPost->comment_status ?? '' }}</td>
             </tr>
         </table>
 
