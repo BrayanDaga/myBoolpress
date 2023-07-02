@@ -33,6 +33,7 @@ class PostRequest extends FormRequest
             'post_id' => 'nullable', //Supongo que no es neceario ya que se agrega como $post->infoPost()->create($data);
             'post_status' => ['required', Rule::in(['public', 'private', 'draft'])],
             'comment_status' => ['required', Rule::in(['open', 'closed', 'private'])],
+            'tags' => 'nullable'
         ];
     }
 }

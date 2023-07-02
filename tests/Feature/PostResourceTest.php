@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Carbon\Carbon;
+use App\Models\Tag;
 use Tests\TestCase;
 use App\Models\Post;
 use App\Models\User;
@@ -107,8 +108,52 @@ class PostResourceTest extends TestCase
         $this->assertEquals($post->refresh()->infoPost->comment_status, 'closed');
         $this->assertEquals($post->refresh()->infoPost->post_status, 'private');
     }
+    /** @test */
+    public function it_can_create_post_with_tags()
+    {
+        $tags = Tag::factory()->count(3)->create();
+        $user = User::factory()->create();
+        $postData = [
+            'title' => $this->faker->sentence(1),
+            'subtitle' => $this->faker->sentence(1),
+            'text' => $this->faker->paragraph(1),
+            'publication_date' => now()->toDateString(),
+            'user_id' => $user->id,
+            'post_status' => 'private',
+            'comment_status' => 'closed',
+            'tags' => $tags->pluck('id')->toArray(),
+        ];
 
+        $response = $this->actingAs($user)->post('/posts', $postData);
 
+        $response->assertRedirect();
+        $this->assertCount(1, Post::all());
+        $post = Post::first();
+        $this->assertCount(3, $post->tags);
+        $this->assertEquals($tags->pluck('id')->toArray(), $post->tags->pluck('id')->toArray());
+    }
+
+    /** @test */
+    public function it_can_create_post_without_tags()
+    {
+        $user = User::factory()->create();
+        $postData = [
+            'title' => $this->faker->sentence(1),
+            'subtitle' => $this->faker->sentence(1),
+            'text' => $this->faker->paragraph(1),
+            'publication_date' => now()->toDateString(),
+            'user_id' => $user->id,
+            'post_status' => 'private',
+            'comment_status' => 'closed',
+        ];
+
+        $response = $this->actingAs($user)->post('/posts', $postData);
+
+        $response->assertRedirect();
+        $this->assertCount(1, Post::all());
+        $post = Post::first();
+        $this->assertCount(0, $post->tags);
+    }
 
     public function test_can_delete_post()
     {

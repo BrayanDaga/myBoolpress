@@ -32,6 +32,17 @@
                 <td>Status dei commenti</td>
                 <td>{{ $post->infoPost->comment_status ?? '' }}</td>
             </tr>
+            <tr>
+                <td>Tags</td>
+                <td>
+                    @php
+                        $tagNames = $post->tags->pluck('name')->toArray();
+                        $tagString = implode(', ', $tagNames);
+                    @endphp
+
+                    {{ $tagString }}
+                </td>
+            </tr>
         </table>
 
         <div class="text-right">

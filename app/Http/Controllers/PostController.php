@@ -62,25 +62,11 @@ class PostController extends Controller
 
         // Establecer la relación entre el post y el infoPost
         $post->infoPost()->save($infoPost);
-
-        return redirect()->route('posts.index')->with('message', 'Post creado correctamente!');
-
-
-
-        // salvataggio infoPost
-        // $data["post_id"] = $post->id; //devo specificare il nuovo post_id con l'id del post creato
-        // $infoPost = new infoPost();
-        // $infoPost->fill($data);
-        // $infoPost->save();
-
         // // salvataggio Tags
-        // if ($infoPost->save()) {
-        //     if (!empty($data["tags"])) {
-        //         $post->tags()->attach($data["tags"]);
-        //     }
-        // }
-
-
+        if (!empty($data["tags"])) {
+            $post->tags()->attach($data["tags"]);
+        }
+        return redirect()->route('posts.index')->with('message', 'Post creado correctamente!');
     }
 
     /**
@@ -131,10 +117,7 @@ class PostController extends Controller
 
         return redirect()->route('posts.index')->with('message', 'Post modificato correttamente!');
 
-        // // $infoPost = InfoPost::where('post_id', $post->id)->first();
-        // $infoPost = $post->infoPost;
-        // $data["post_id"] = $post->id; //devo specificare il post_id con l'id del post modificato
-        // $infoPost->update($data);
+
 
         // // modifica tags
         // if (empty($data["tags"])) {
