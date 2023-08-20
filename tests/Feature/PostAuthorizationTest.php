@@ -16,26 +16,28 @@ class PostAuthorizationTest extends TestCase
     {
         // Creamos un usuario de prueba
         $user = User::factory()->create();
-
         // Creamos un post perteneciente al usuario
         $post = Post::factory()->create(['user_id' => $user->id]);
 
-        // Autenticamos al usuario
-        $this->actingAs($user);
-
         // Intentamos acyualizar el post
-        $response = $this->put(route('posts.update', $post), [
+        $response =  $this->actingAs($user)->put(route('posts.update', $post), [
             'title' => 'Nuevo título',
             'subtitle' => 'Nuevo título',
             'publication_date' => '2023-01-01',
-            'text' => 'Nuevo contenido'
+            'text' => 'Nuevo contenido',
+            'user_id' => $user->id,
+            'post_status' => 'private',
+            'comment_status' => 'closed'
         ]);
+
 
         // Verificamos que la respuesta sea una redirección exitosa (código 302)
         $response->assertRedirect();
 
-        // Verificamos que el post haya sido eliminado de la base de datos
-        $this->assertDatabaseHas('posts', ['title' => 'Nuevo título']);
+        $this->assertDatabaseHas('posts', [
+            'id' => $post->id,
+            'title' => 'Nuevo título'
+        ]);
     }
 
     public function  test_user_cannot_edit_other_users_post()
@@ -55,7 +57,10 @@ class PostAuthorizationTest extends TestCase
             'title' => 'Nuevo título',
             'subtitle' => 'Nuevo título',
             'publication_date' => '2023-01-01',
-            'text' => 'Nuevo contenido'
+            'text' => 'Nuevo contenido',
+            'user_id' => $user1->id,
+            'post_status' => 'private',
+            'comment_status' => 'closed'
         ]);
 
         // Verificamos que la respuesta sea un error 403 Forbidden

@@ -70,4 +70,11 @@ class Post extends Model
     {
         return $this->belongsToMany(Tag::class);
     }
+
+
+    public function strTags(): String
+    {
+        $tagNames = $this->tags->pluck('name')->toArray();
+        return implode(', ', $tagNames);
+    }
 }

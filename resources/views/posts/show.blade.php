@@ -35,12 +35,7 @@
             <tr>
                 <td>Tags</td>
                 <td>
-                    @php
-                        $tagNames = $post->tags->pluck('name')->toArray();
-                        $tagString = implode(', ', $tagNames);
-                    @endphp
-
-                    {{ $tagString }}
+                    {{ $post->strTags() }}
                 </td>
             </tr>
         </table>
